@@ -1,24 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchHCPs, submitInteractionForm } from '../store/interactionSlice';
+import { fetchHCPs, submitInteractionForm, updateFormData, resetFormData } from '../store/interactionSlice';
 
 const StructuredForm = () => {
   const dispatch = useDispatch();
-  const { hcps, status } = useSelector((state) => state.interaction);
-  
-  const [formData, setFormData] = useState({
-    hcp_id: '',
-    interaction_type: 'Meeting',
-    date: '2025-04-19',
-    time: '19:36',
-    attendees: '',
-    topics: '',
-    materials_shared: '',
-    samples_distributed: '',
-    sentiment: 'Neutral',
-    outcomes: '',
-    action_items: ''
-  });
+  const { hcps, status, formData } = useSelector((state) => state.interaction);
 
   useEffect(() => {
     if (hcps.length === 0) {
@@ -28,11 +14,11 @@ const StructuredForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    dispatch(updateFormData({ [name]: value }));
   };
 
   const handleRadioChange = (val) => {
-    setFormData(prev => ({ ...prev, sentiment: val }));
+    dispatch(updateFormData({ sentiment: val }));
   };
 
   const handleSubmit = (e) => {
@@ -43,11 +29,7 @@ const StructuredForm = () => {
     }
     dispatch(submitInteractionForm(formData)).then(() => {
       alert("Interaction logged successfully!");
-      setFormData({ 
-        hcp_id: '', interaction_type: 'Meeting', date: '2025-04-19', time: '19:36', 
-        attendees: '', topics: '', materials_shared: '', samples_distributed: '', 
-        sentiment: 'Neutral', outcomes: '', action_items: '' 
-      });
+      dispatch(resetFormData());
     });
   };
 
@@ -59,7 +41,7 @@ const StructuredForm = () => {
         <div className="row">
           <div className="col form-group">
             <label>HCP Name:</label>
-            <select name="hcp_id" value={formData.hcp_id} onChange={handleChange} required>
+            <select name="hcp_id" value={formData.hcp_id || ''} onChange={handleChange} required>
               <option value="">Search or select HCP...</option>
               {hcps.map(hcp => (
                 <option key={hcp.id} value={hcp.id}>
@@ -70,7 +52,7 @@ const StructuredForm = () => {
           </div>
           <div className="col form-group">
             <label>Interaction Type</label>
-            <select name="interaction_type" value={formData.interaction_type} onChange={handleChange}>
+            <select name="interaction_type" value={formData.interaction_type || 'Meeting'} onChange={handleChange}>
               <option value="Meeting">Meeting</option>
               <option value="Email">Email</option>
               <option value="Phone">Phone</option>
@@ -81,22 +63,22 @@ const StructuredForm = () => {
         <div className="row">
           <div className="col form-group">
             <label>Date</label>
-            <input type="date" name="date" value={formData.date} onChange={handleChange} />
+            <input type="date" name="date" value={formData.date || ''} onChange={handleChange} />
           </div>
           <div className="col form-group">
             <label>Time</label>
-            <input type="time" name="time" value={formData.time} onChange={handleChange} />
+            <input type="time" name="time" value={formData.time || ''} onChange={handleChange} />
           </div>
         </div>
 
         <div className="form-group">
           <label>Attendees</label>
-          <input type="text" name="attendees" value={formData.attendees} onChange={handleChange} placeholder="Enter names or search..." />
+          <input type="text" name="attendees" value={formData.attendees || ''} onChange={handleChange} placeholder="Enter names or search..." />
         </div>
 
         <div className="form-group">
           <label>Topics Discussed</label>
-          <textarea name="topics" value={formData.topics} onChange={handleChange} rows="3" placeholder="Enter key discussion points..."></textarea>
+          <textarea name="topics" value={formData.topics || ''} onChange={handleChange} rows="3" placeholder="Enter key discussion points..."></textarea>
           <button type="button" className="btn-summarize">
             🎤 Summarize from Voice Note (Requires Consent)
           </button>
@@ -107,7 +89,7 @@ const StructuredForm = () => {
         <div className="item-list">
           <div>
             <div style={{fontWeight: 500, fontSize: '0.875rem', marginBottom: '4px'}}>Materials Shared</div>
-            <span>No materials added.</span>
+            <span>{formData.materials_shared || 'No materials added.'}</span>
           </div>
           <button type="button" className="btn-outline">🔍 Search/Add</button>
         </div>
@@ -115,7 +97,7 @@ const StructuredForm = () => {
         <div className="item-list">
           <div>
             <div style={{fontWeight: 500, fontSize: '0.875rem', marginBottom: '4px'}}>Samples Distributed</div>
-            <span>No samples added.</span>
+            <span>{formData.samples_distributed || 'No samples added.'}</span>
           </div>
           <button type="button" className="btn-outline">📦 Add Sample</button>
         </div>
@@ -140,12 +122,12 @@ const StructuredForm = () => {
 
         <div className="form-group">
           <label>Outcomes</label>
-          <textarea name="outcomes" value={formData.outcomes} onChange={handleChange} rows="2" placeholder="Key outcomes or agreements..."></textarea>
+          <textarea name="outcomes" value={formData.outcomes || ''} onChange={handleChange} rows="2" placeholder="Key outcomes or agreements..."></textarea>
         </div>
 
         <div className="form-group">
           <label>Follow-up Actions</label>
-          <textarea name="action_items" value={formData.action_items} onChange={handleChange} rows="2" placeholder="Enter next steps or tasks..."></textarea>
+          <textarea name="action_items" value={formData.action_items || ''} onChange={handleChange} rows="2" placeholder="Enter next steps or tasks..."></textarea>
         </div>
 
         <div className="ai-suggestions">

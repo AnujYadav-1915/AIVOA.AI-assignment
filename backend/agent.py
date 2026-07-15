@@ -15,11 +15,10 @@ def get_agent():
     
     llm = ChatGroq(
         api_key=groq_api_key,
-        model="gemma2-9b-it",
+        model="llama-3.3-70b-versatile",
         temperature=0
     )
     
     # create_react_agent wires up the LLM with the tools into a LangGraph state graph
-    system_message = "You are a helpful AI assistant for pharmaceutical field representatives. You help manage interactions with Healthcare Professionals (HCPs)."
-    agent = create_react_agent(llm, tools, state_modifier=system_message)
+    agent = create_react_agent(llm, tools)
     return agent

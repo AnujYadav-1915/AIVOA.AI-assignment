@@ -15,12 +15,31 @@ export const submitInteractionForm = createAsyncThunk('interaction/submitForm', 
 
 export const sendChatMessage = createAsyncThunk('interaction/sendChat', async (messageData) => {
   const response = await axios.post(`${API_URL}/chat`, messageData);
-  return { userMessage: messageData.message, aiResponse: response.data.response };
+  return { 
+    userMessage: messageData.message, 
+    aiResponse: response.data.response,
+    formData: response.data.form_data
+  };
 });
+
+const defaultFormState = {
+  hcp_id: '',
+  interaction_type: 'Meeting',
+  date: '2025-04-19',
+  time: '19:36',
+  attendees: '',
+  topics: '',
+  materials_shared: '',
+  samples_distributed: '',
+  sentiment: 'Neutral',
+  outcomes: '',
+  action_items: ''
+};
 
 const initialState = {
   hcps: [],
   chatHistory: [],
+  formData: { ...defaultFormState },
   status: 'idle',
   error: null,
 };
@@ -28,7 +47,14 @@ const initialState = {
 const interactionSlice = createSlice({
   name: 'interaction',
   initialState,
-  reducers: {},
+  reducers: {
+    updateFormData: (state, action) => {
+      state.formData = { ...state.formData, ...action.payload };
+    },
+    resetFormData: (state) => {
+      state.formData = { ...defaultFormState };
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchHCPs.fulfilled, (state, action) => {
@@ -44,14 +70,23 @@ const interactionSlice = createSlice({
         state.status = 'failed';
         state.error = action.error.message;
       })
-      .addCase(sendChatMessage.pending, (state, action) => {
+      .addCase(sendChatMessage.pending, (state) => {
         state.status = 'loading';
-        // Optimistically add user message (in a real app, manage this separately for better UI)
       })
       .addCase(sendChatMessage.fulfilled, (state, action) => {
         state.status = 'succeeded';
         state.chatHistory.push({ role: 'user', content: action.payload.userMessage });
         state.chatHistory.push({ role: 'ai', content: action.payload.aiResponse });
+        
+        // Auto-populate form data from AI extraction
+        if (action.payload.formData) {
+          const extracted = action.payload.formData;
+          Object.keys(extracted).forEach(key => {
+            if (extracted[key] !== null && extracted[key] !== "" && key in state.formData) {
+              state.formData[key] = extracted[key];
+            }
+          });
+        }
       })
       .addCase(sendChatMessage.rejected, (state, action) => {
         state.status = 'failed';
@@ -60,4 +95,5 @@ const interactionSlice = createSlice({
   },
 });
 
+export const { updateFormData, resetFormData } = interactionSlice.actions;
 export default interactionSlice.reducer;
