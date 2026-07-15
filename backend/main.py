@@ -128,13 +128,19 @@ def chat_with_agent(req: ChatRequest, db: Session = Depends(get_db)):
                 pass
         
         # 2. Agent Workflow
+        from langchain_core.messages import SystemMessage
         agent = get_agent()
         config = {"configurable": {"thread_id": req.session_id}}
-        response = agent.invoke({"messages": [HumanMessage(content=req.message)]}, config)
+        
+        sys_msg = SystemMessage(content="You are an AI assistant for a CRM. ONLY use tools if they are directly requested or required to answer the user's prompt. Do NOT log an interaction, edit, or schedule follow-ups unless the user explicitly asks you to.")
+        
+        response = agent.invoke({"messages": [sys_msg, HumanMessage(content=req.message)]}, config)
         ai_message = response["messages"][-1].content
         
         return {"response": ai_message, "form_data": form_data}
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

@@ -70,12 +70,14 @@ const interactionSlice = createSlice({
         state.status = 'failed';
         state.error = action.error.message;
       })
-      .addCase(sendChatMessage.pending, (state) => {
+      .addCase(sendChatMessage.pending, (state, action) => {
         state.status = 'loading';
+        // Immediately add the user's message to the chat history so it doesn't disappear!
+        state.chatHistory.push({ role: 'user', content: action.meta.arg.message });
       })
       .addCase(sendChatMessage.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.chatHistory.push({ role: 'user', content: action.payload.userMessage });
+        // Add the AI's response
         state.chatHistory.push({ role: 'ai', content: action.payload.aiResponse });
         
         // Auto-populate form data from AI extraction
@@ -91,6 +93,7 @@ const interactionSlice = createSlice({
       .addCase(sendChatMessage.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message;
+        state.chatHistory.push({ role: 'ai', content: "Error: The server failed to respond. Please refresh the page and try again." });
       });
   },
 });
