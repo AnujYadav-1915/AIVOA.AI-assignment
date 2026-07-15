@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+sqlalchemy
+langgraph>=0.2.0
+langchain>=0.2.0
+langchain-community>=0.2.0
+langchain-groq>=0.1.0
+pydantic
+python-dotenv
