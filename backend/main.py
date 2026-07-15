@@ -109,9 +109,9 @@ def chat_with_agent(req: ChatRequest, db: Session = Depends(get_db)):
         # 1. Extraction Pipeline to populate form
         if groq_api_key and groq_api_key != "your_groq_api_key_here":
             try:
-                llm = ChatGroq(api_key=groq_api_key, model="llama-3.3-70b-versatile", temperature=0)
+                llm = ChatGroq(api_key=groq_api_key, model="llama-3.1-8b-instant", temperature=0)
                 extractor = llm.with_structured_output(ExtractionModel)
-                prompt = f"Extract the following information from the user's message. If not mentioned, leave empty.\\n\\nMessage: {req.message}"
+                prompt = f"Extract the following information from the user's message. If not mentioned, leave empty.\n\nMessage: {req.message}"
                 extraction_res = extractor.invoke(prompt)
                 
                 if extraction_res:
@@ -132,7 +132,7 @@ def chat_with_agent(req: ChatRequest, db: Session = Depends(get_db)):
         agent = get_agent()
         config = {"configurable": {"thread_id": req.session_id}}
         
-        sys_msg = SystemMessage(content="You are an AI assistant for a CRM. ONLY use tools if they are directly requested or required to answer the user's prompt. Do NOT log an interaction, edit, or schedule follow-ups unless the user explicitly asks you to.")
+        sys_msg = SystemMessage(content="You are an AI assistant for a CRM. If the user provides details about an interaction, you MUST use the log_interaction tool immediately. Do not ask for permission. CRITICAL: DO NOT nest tool calls. If you need an ID, call search_hcp first, wait for the response, and then call log_interaction.")
         
         response = agent.invoke({"messages": [sys_msg, HumanMessage(content=req.message)]}, config)
         ai_message = response["messages"][-1].content
