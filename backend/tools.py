@@ -26,29 +26,29 @@ def search_hcp(query: str) -> str:
         db.close()
 
 @tool
-def get_past_interactions(hcp_id: int) -> str:
+def get_past_interactions(hcp_id: str) -> str:
     """Retrieves past interactions for a specific HCP ID to gain context before a meeting."""
     db = get_db_session()
     try:
-        interactions = db.query(Interaction).filter(Interaction.hcp_id == hcp_id).order_by(Interaction.date.desc()).limit(5).all()
+        interactions = db.query(Interaction).filter(Interaction.hcp_id == int(hcp_id)).order_by(Interaction.date.desc()).limit(5).all()
         if not interactions:
             return "No past interactions found for this HCP."
         
         results = []
         for ix in interactions:
             results.append(f"Interaction ID {ix.id} on {ix.date.strftime('%Y-%m-%d')}: Topics: {ix.topics}. Summary: {ix.summary}. Actions: {ix.action_items}")
-        return "\\n".join(results)
+        return "\n".join(results)
     finally:
         db.close()
 
 @tool
-def log_interaction(hcp_id: int, summary: str, topics: str, action_items: str) -> str:
+def log_interaction(hcp_id: str, summary: str, topics: str, action_items: str) -> str:
     """Logs a new interaction with an HCP.
     Provide the HCP ID, a detailed summary of the meeting, the topics discussed (comma separated), and any action items."""
     db = get_db_session()
     try:
         new_interaction = Interaction(
-            hcp_id=hcp_id,
+            hcp_id=int(hcp_id),
             summary=summary,
             topics=topics,
             action_items=action_items,
@@ -65,12 +65,12 @@ def log_interaction(hcp_id: int, summary: str, topics: str, action_items: str) -
         db.close()
 
 @tool
-def edit_interaction(interaction_id: int, new_summary: str = None, new_topics: str = None, new_action_items: str = None) -> str:
+def edit_interaction(interaction_id: str, new_summary: str = None, new_topics: str = None, new_action_items: str = None) -> str:
     """Edits an existing interaction by its Interaction ID. 
     Only provide the fields that need to be updated. Leave others empty or null."""
     db = get_db_session()
     try:
-        ix = db.query(Interaction).filter(Interaction.id == interaction_id).first()
+        ix = db.query(Interaction).filter(Interaction.id == int(interaction_id)).first()
         if not ix:
             return f"Interaction ID {interaction_id} not found."
         
@@ -90,7 +90,7 @@ def edit_interaction(interaction_id: int, new_summary: str = None, new_topics: s
         db.close()
 
 @tool
-def schedule_follow_up(hcp_id: int, task_description: str, date_str: str) -> str:
+def schedule_follow_up(hcp_id: str, task_description: str, date_str: str) -> str:
     """Schedules a follow-up task for an HCP. 
     Provide the HCP ID, a description of the task, and the target date (e.g., 'YYYY-MM-DD')."""
     # This is a stub for the 5th tool required by the prompt

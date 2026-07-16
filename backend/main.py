@@ -109,7 +109,7 @@ def chat_with_agent(req: ChatRequest, db: Session = Depends(get_db)):
         # 1. Extraction Pipeline to populate form
         if groq_api_key and groq_api_key != "your_groq_api_key_here":
             try:
-                llm = ChatGroq(api_key=groq_api_key, model="llama-3.1-8b-instant", temperature=0)
+                llm = ChatGroq(api_key=groq_api_key, model="llama-3.3-70b-versatile", temperature=0)
                 extractor = llm.with_structured_output(ExtractionModel)
                 prompt = f"Extract the following information from the user's message. If not mentioned, leave empty.\n\nMessage: {req.message}"
                 extraction_res = extractor.invoke(prompt)

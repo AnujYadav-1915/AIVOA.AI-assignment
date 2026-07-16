@@ -13,8 +13,8 @@ def get_agent():
     if not groq_api_key or groq_api_key == "your_groq_api_key_here":
         raise ValueError("GROQ_API_KEY is not set in the environment.")
     
-    # Switch to llama-3.1-8b-instant because the 70b model hit the daily token rate limit
-    llm = ChatGroq(model_name="llama-3.1-8b-instant", temperature=0)
+    # Use the stable 70b model. Mixtral is decommissioned, 8b enters recursion loops.
+    llm = ChatGroq(model_name="llama-3.3-70b-versatile", temperature=0)
     
     # create_react_agent wires up the LLM with the tools into a LangGraph state graph
     agent = create_react_agent(llm, tools)
