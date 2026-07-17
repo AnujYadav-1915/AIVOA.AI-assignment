@@ -132,7 +132,7 @@ def chat_with_agent(req: ChatRequest, db: Session = Depends(get_db)):
         agent = get_agent()
         config = {"configurable": {"thread_id": req.session_id}}
         
-        sys_msg = SystemMessage(content="You are an AI assistant for a CRM. If the user provides details about an interaction, you MUST use the log_interaction tool immediately. Do not ask for permission. CRITICAL: DO NOT nest tool calls. If you need an ID, call search_hcp first, wait for the response, and then call log_interaction.")
+        sys_msg = SystemMessage(content="You are an AI assistant for a CRM. If the user provides details about an interaction, you MUST use the log_interaction tool immediately. Do not ask for permission. Do not output raw tool tags.")
         
         response = agent.invoke({"messages": [sys_msg, HumanMessage(content=req.message)]}, config)
         ai_message = response["messages"][-1].content
